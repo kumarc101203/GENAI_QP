@@ -1,0 +1,7 @@
+# Ignore everything
+*
+
+# Except demo.html and README
+!demo.html
+!README.md
+!.gitignore

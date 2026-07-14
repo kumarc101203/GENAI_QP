@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GenAIQuestionGen — AI Question Paper Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0a0a0f;
+  --surface:#12121a;
+  --surface-2:#1a1a26;
+  --surface-3:#22222e;
+  --border:rgba(255,255,255,0.06);
+  --border-hover:rgba(255,255,255,0.12);
+  --text:#f0f0f5;
+  --text-2:#a0a0b8;
+  --text-3:#6a6a80;
+  --accent:#6c5ce7;
+  --accent-2:#a29bfe;
+  --accent-glow:rgba(108,92,231,0.15);
+  --green:#00b894;
+  --orange:#fdcb6e;
+  --red:#ff6b6b;
+  --radius:12px;
+  --radius-sm:8px;
+  --font:'Inter',sans-serif;
+  --mono:'JetBrains Mono',monospace;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+/* Animated background */
+.bg-gradient{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 80% 60% at 50% -20%,rgba(108,92,231,0.12),transparent),
+             radial-gradient(ellipse 60% 40% at 80% 100%,rgba(0,184,148,0.06),transparent),
+             radial-gradient(ellipse 40% 30% at 10% 60%,rgba(253,203,110,0.04),transparent);
+}
+.app{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:24px 20px 80px;}
+
+/* Header */
+.header{display:flex;align-items:center;justify-content:space-between;padding:16px 0 32px;border-bottom:1px solid var(--border);margin-bottom:32px;}
+.header .logo{display:flex;align-items:center;gap:12px;}
+.header .logo h1{font-size:22px;font-weight:700;letter-spacing:-0.5px;}
+.header .logo h1 span{color:var(--accent);}
+.header .badge{display:flex;gap:8px;}
+.header .badge span{font-size:11px;font-weight:500;padding:4px 10px;border-radius:20px;background:var(--surface-2);border:1px solid var(--border);color:var(--text-2);}
+.gear-btn{background:none;border:none;color:var(--text-3);font-size:18px;cursor:pointer;padding:6px;border-radius:6px;transition:all .2s;}
+.gear-btn:hover{color:var(--text);background:var(--surface-2);}
+
+/* Mode tabs */
+.tabs{display:flex;gap:4px;background:var(--surface);border-radius:var(--radius);padding:4px;margin-bottom:28px;width:fit-content;}
+.tab{padding:10px 24px;border-radius:var(--radius-sm);font-size:13.5px;font-weight:500;cursor:pointer;border:none;background:transparent;color:var(--text-2);transition:all .2s;}
+.tab.active{background:var(--accent);color:#fff;box-shadow:0 4px 12px rgba(108,92,231,0.3);}
+.tab:hover:not(.active){color:var(--text);background:var(--surface-2);}
+
+/* Layout */
+.workspace{display:grid;grid-template-columns:420px 1fr;gap:24px;align-items:start;}
+@media(max-width:900px){.workspace{grid-template-columns:1fr;}}
+
+/* Cards */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;transition:border-color .2s;}
+.card:hover{border-color:var(--border-hover);}
+.card-title{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-3);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.card-title .icon{width:20px;height:20px;border-radius:6px;background:var(--accent-glow);display:flex;align-items:center;justify-content:center;font-size:11px;}
+
+/* Form elements */
+label{display:block;font-size:12px;font-weight:500;color:var(--text-2);margin-bottom:6px;margin-top:14px;}
+label:first-child{margin-top:0;}
+input,select,textarea{width:100%;background:var(--surface-2);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;transition:all .2s;}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow);}
+textarea{resize:vertical;min-height:70px;}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+
+/* Buttons */
+.btn-primary{width:100%;padding:14px 20px;border:none;border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;
+  background:linear-gradient(135deg,var(--accent),#8b5cf6);color:#fff;box-shadow:0 4px 16px rgba(108,92,231,0.3);margin-top:20px;}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(108,92,231,0.4);}
+.btn-primary:active{transform:translateY(0);}
+.btn-primary:disabled{opacity:0.4;cursor:not-allowed;transform:none;box-shadow:none;}
+.btn-ghost{padding:10px 16px;border:1px solid var(--border);border-radius:var(--radius-sm);background:transparent;color:var(--text);font-family:var(--font);font-size:13px;cursor:pointer;transition:all .2s;}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent-2);}
+
+/* Dropzone */
+.dropzone{border:2px dashed var(--border-hover);border-radius:var(--radius);padding:28px 16px;text-align:center;cursor:pointer;transition:all .2s;margin-top:12px;}
+.dropzone:hover,.dropzone.drag{border-color:var(--accent);background:var(--accent-glow);}
+.dropzone .dz-icon{font-size:28px;margin-bottom:8px;}
+.dropzone .dz-title{font-size:13px;font-weight:500;color:var(--text);margin-bottom:4px;}
+.dropzone .dz-sub{font-size:11px;color:var(--text-3);}
+.dropzone input{display:none;}
+
+/* Progress */
+.progress-wrap{margin-top:16px;}
+.progress-label{font-size:12px;color:var(--text-2);margin-bottom:6px;}
+.progress-bar{height:4px;background:var(--surface-3);border-radius:2px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--green));width:0%;transition:width .4s ease;}
+
+/* Output panel */
+.output-panel{min-height:500px;display:flex;flex-direction:column;}
+.empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:60px 24px;gap:12px;}
+.empty-state .icon{font-size:48px;opacity:0.3;margin-bottom:8px;}
+.empty-state h3{font-size:18px;font-weight:600;color:var(--text);}
+.empty-state p{font-size:13px;color:var(--text-3);max-width:280px;}
+
+/* Paper render */
+.paper{background:#fff;color:#000;border-radius:var(--radius-sm);padding:32px;font-family:'Times New Roman',serif;box-shadow:0 20px 60px rgba(0,0,0,0.5);}
+.paper .college-name{text-align:center;font-weight:700;font-size:15px;}
+.paper .affil{text-align:center;font-size:11px;color:#444;margin-bottom:8px;}
+.paper .scheme-box{text-align:center;margin-bottom:10px;}
+.paper .scheme-box span{border:1.5px solid #000;padding:2px 12px;font-weight:700;font-size:14px;letter-spacing:1px;}
+.paper .usn-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.paper .usn-boxes{display:flex;}
+.paper .usn-boxes div{width:20px;height:22px;border:1px solid #000;border-left:none;}
+.paper .usn-boxes div:first-child{border-left:1px solid #000;}
+.paper .exam-title{text-align:center;font-weight:700;font-size:14px;margin:4px 0;}
+.paper .subject-title{text-align:center;font-weight:700;font-size:15px;margin-bottom:6px;}
+.paper .time-marks{display:flex;justify-content:space-between;font-size:12.5px;font-weight:600;padding:6px 0;border-top:1px solid #000;margin-bottom:8px;}
+.paper .note{font-size:11.5px;margin-bottom:10px;line-height:1.5;font-style:italic;}
+.paper table{width:100%;border-collapse:collapse;font-size:12px;line-height:1.4;}
+.paper td,.paper th{border:1px solid #000;padding:5px 6px;vertical-align:top;}
+.paper .col-q{width:36px;text-align:center;font-weight:700;}
+.paper .col-l{width:24px;text-align:center;}
+.paper .col-m{width:28px;text-align:center;}
+.paper .col-bl{width:28px;text-align:center;}
+.paper .col-co{width:56px;text-align:center;font-size:11px;}
+.paper .mod-row td{text-align:center;font-weight:700;background:#f0f0f0;letter-spacing:0.5px;}
+.paper .or-row td{text-align:center;font-weight:700;letter-spacing:2px;}
+
+/* Output actions */
+.output-actions{display:flex;gap:10px;margin-bottom:16px;}
+
+/* Status badges */
+.status{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:500;padding:3px 8px;border-radius:12px;}
+.status-ok{background:rgba(0,184,148,0.1);color:var(--green);}
+.status-warn{background:rgba(253,203,110,0.1);color:var(--orange);}
+.status-err{background:rgba(255,107,107,0.1);color:var(--red);}
+
+/* Collapsible details */
+details{margin:8px 0;}
+details summary{cursor:pointer;font-size:13px;font-weight:500;color:var(--text-2);padding:6px 0;transition:color .2s;}
+details summary:hover{color:var(--text);}
+details textarea{margin-top:8px;font-family:var(--mono);font-size:12px;}
+
+/* Checkbox */
+.check-row{display:flex;align-items:center;gap:8px;margin:10px 0;}
+.check-row input[type=checkbox]{width:16px;height:16px;accent-color:var(--accent);}
+.check-row label{margin:0;font-size:13px;color:var(--text);}
+
+/* Toast */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--red);color:#fff;padding:12px 18px;border-radius:var(--radius-sm);font-size:13px;max-width:340px;box-shadow:0 8px 24px rgba(0,0,0,0.4);animation:slideUp .3s ease;}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+
+/* Hidden API panel */
+.api-panel{display:none;position:fixed;top:0;right:0;width:360px;height:100vh;background:var(--surface);border-left:1px solid var(--border);padding:24px;z-index:100;overflow-y:auto;box-shadow:-8px 0 24px rgba(0,0,0,0.4);}
+.api-panel.open{display:block;animation:slideIn .2s ease;}
+@keyframes slideIn{from{transform:translateX(100%);}to{transform:translateX(0);}}
+.api-panel h3{font-size:14px;font-weight:600;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;}
+.api-panel .close-btn{background:none;border:none;color:var(--text-3);font-size:20px;cursor:pointer;}
+
+/* Print */
+@media print{
+  body{background:#fff!important;}
+  .header,.setup-card,.output-actions,.bg-gradient,.tabs{display:none!important;}
+  .app{max-width:none;padding:0;}
+  .workspace{display:block;}
+  .output-panel{border:none;padding:0;background:none;}
+  .card{border:none;padding:0;background:none;}
+  .paper{box-shadow:none;padding:16mm;}
+}
+</style>
+</head>
+<body>
+<div class="bg-gradient"></div>
+<div class="app">
+
+<!-- Header -->
+<header class="header">
+  <div class="logo">
+    <h1>GenAI<span>QuestionGen</span></h1>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <div class="badge">
+      <span>VTU Pattern</span>
+      <span>Bloom's Taxonomy</span>
+      <span>CO/PO Mapped</span>
+    </div>
+    <button class="gear-btn" id="gearBtn" title="Settings">⚙️</button>
+  </div>
+</header>
+
+<!-- Mode Tabs -->
+<div class="tabs">
+  <button class="tab active" data-mode="quick">⚡ Quick Generate</button>
+  <button class="tab" data-mode="paper">📄 Full Paper</button>
+</div>
+
+<div class="workspace">
+
+<!-- LEFT PANEL -->
+<div class="setup-card">
+
+<!-- QUICK MODE -->
+<div id="quickMode">
+<div class="card" style="margin-bottom:16px;">
+  <div class="card-title"><span class="icon">📚</span> Subject & Unit</div>
+  <label>Subject</label>
+  <input type="text" id="qSubject" value="Machine Learning" placeholder="e.g. Machine Learning, Data Structures...">
+  <div class="row" style="margin-top:0;">
+    <div><label>Branch</label><input type="text" id="qBranch" value="CSE"></div>
+    <div><label>Semester</label><input type="text" id="qSem" value="7"></div>
+  </div>
+  <label>Subject Code</label>
+  <input type="text" id="qCode" value="BCS701">
+</div>
+
+<div class="card" style="margin-bottom:16px;">
+  <div class="card-title"><span class="icon">🎯</span> Question Parameters</div>
+  <div class="row">
+    <div><label>Module / Unit</label>
+      <select id="qModule">
+        <option value="1">Module 1</option><option value="2">Module 2</option>
+        <option value="3" selected>Module 3</option><option value="4">Module 4</option>
+        <option value="5">Module 5</option>
+      </select>
+    </div>
+    <div><label>Difficulty</label>
+      <select id="qDiff">
+        <option value="Easy">Easy</option><option value="Medium" selected>Medium</option><option value="Hard">Hard</option>
+      </select>
+    </div>
+  </div>
+  <label>Generate questions for marks</label>
+  <div class="row" style="margin-top:6px;">
+    <div class="check-row"><input type="checkbox" id="m5" checked><label for="m5">5 Marks</label></div>
+    <div class="check-row"><input type="checkbox" id="m7" checked><label for="m7">7 Marks</label></div>
+  </div>
+  <div class="row">
+    <div class="check-row"><input type="checkbox" id="m8" checked><label for="m8">8 Marks</label></div>
+    <div class="check-row"><input type="checkbox" id="m10" checked><label for="m10">10 Marks</label></div>
+  </div>
+  <div class="check-row"><input type="checkbox" id="qBloom" checked><label for="qBloom">Tag Bloom's Taxonomy Level</label></div>
+  <div class="check-row"><input type="checkbox" id="qCO" checked><label for="qCO">Map to Course Outcome (CO/PO)</label></div>
+</div>
+
+<div class="card" style="margin-bottom:16px;">
+  <div class="card-title"><span class="icon">📝</span> Syllabus / Topic Content</div>
+  <textarea id="qTopic" rows="5" placeholder="Paste the module/unit syllabus content here, or upload a file below..."></textarea>
+  <div class="dropzone" id="qDropzone">
+    <div class="dz-icon">📁</div>
+    <div class="dz-title">Drop syllabus file or click to browse</div>
+    <div class="dz-sub">PDF / DOCX / TXT — auto-extracts module content</div>
+    <input type="file" id="qFileInput">
+  </div>
+  <div id="qFileStatus" style="font-size:12px;color:var(--text-3);margin-top:6px;"></div>
+</div>
+
+<div class="card">
+  <div class="card-title"><span class="icon">📋</span> Course Outcomes (optional)</div>
+  <textarea id="qCOs" rows="3" placeholder="CO1: Understand the fundamentals of...&#10;CO2: Apply...&#10;CO3: Analyze..." style="font-size:12px;"></textarea>
+</div>
+
+<div class="card" style="margin-top:16px;">
+  <div class="card-title"><span class="icon">📄</span> Previous VTU Questions (Style Reference)</div>
+  <textarea id="qPastPapers" rows="4" placeholder="Paste a few real past VTU questions for this subject/module here. The AI will mimic their phrasing style and difficulty calibration..." style="font-size:12px;"></textarea>
+  <div class="dropzone" id="pastDropzone" style="margin-top:10px;padding:16px;">
+    <div class="dz-icon">📑</div>
+    <div class="dz-title">Or drop a past question paper file</div>
+    <div class="dz-sub">PDF / DOCX / TXT — text is extracted and added above</div>
+    <input type="file" id="pastFileInput">
+  </div>
+</div>
+
+<button class="btn-primary" id="quickGenBtn">⚡ Generate Questions</button>
+<div class="progress-wrap" id="quickProgress" style="display:none;">
+  <div class="progress-label" id="quickProgressLabel">Generating...</div>
+  <div class="progress-bar"><div class="progress-fill" id="quickProgressFill"></div></div>
+</div>
+</div><!-- /quickMode -->
+
+<!-- FULL PAPER MODE (hidden by default) -->
+<div id="paperMode" style="display:none;">
+<div class="card" style="margin-bottom:16px;">
+  <div class="card-title"><span class="icon">🏫</span> Paper Details</div>
+  <label>College</label>
+  <input type="text" id="collegeName" value="JSS Academy of Technical Education, Bengaluru">
+  <label>Affiliation</label>
+  <input type="text" id="affil" value="Affiliated to Visvesvaraya Technological University, Belagavi">
+  <div class="row">
+    <div><label>Scheme</label><input type="text" id="schemeLabel" value="CBCS SCHEME"></div>
+    <div><label>Degree</label><input type="text" id="degree" value="B.E."></div>
+  </div>
+  <div class="row">
+    <div><label>Branch</label><input type="text" id="pBranch" value="CSE"></div>
+    <div><label>Semester</label><input type="text" id="pSem" value="7"></div>
+  </div>
+  <div class="row">
+    <div><label>Subject</label><input type="text" id="pSubject" value="Machine Learning"></div>
+    <div><label>Code</label><input type="text" id="pCode" value="BCS701"></div>
+  </div>
+  <div class="row">
+    <div><label>Max Marks</label><input type="text" id="maxMarks" value="100"></div>
+    <div><label>Duration</label><input type="text" id="duration" value="3 Hours"></div>
+  </div>
+  <label>Exam Instructions</label>
+  <textarea id="examNote" rows="2" style="font-size:12px;">Answer any FIVE full questions, choosing ONE full question from each module.
+M : Marks , L: Bloom's level , C: Course outcomes.</textarea>
+  <label>Course Outcomes</label>
+  <textarea id="pCOs" rows="3" style="font-size:12px;" placeholder="CO1: ...&#10;CO2: ..."></textarea>
+</div>
+
+<div class="card" style="margin-bottom:16px;">
+  <div class="card-title"><span class="icon">📁</span> Upload Syllabus</div>
+  <div class="dropzone" id="pDropzone">
+    <div class="dz-icon">📄</div>
+    <div class="dz-title">Drop syllabus file (auto-splits into 5 modules)</div>
+    <div class="dz-sub">PDF / DOCX / TXT · or use sample below</div>
+    <input type="file" id="pFileInput" multiple>
+  </div>
+  <div id="pFileStatus" style="font-size:12px;margin-top:6px;color:var(--text-3);"></div>
+  <button class="btn-ghost" id="loadSampleBtn" style="margin-top:10px;width:100%;">Load sample ML syllabus →</button>
+</div>
+
+<div class="card" style="margin-bottom:16px;">
+  <div class="card-title"><span class="icon">✏️</span> Review Modules</div>
+  <div id="moduleEditors"></div>
+</div>
+
+<div class="card">
+  <div class="card-title"><span class="icon">⚙️</span> Options</div>
+  <div class="check-row"><input type="checkbox" id="optBloom" checked><label for="optBloom">Tag Bloom's Taxonomy</label></div>
+  <div class="check-row"><input type="checkbox" id="optCO" checked><label for="optCO">Map to Course Outcomes</label></div>
+</div>
+
+<button class="btn-primary" id="generateBtn" disabled>📄 Generate Full Paper</button>
+<div class="progress-wrap" id="paperProgress" style="display:none;">
+  <div class="progress-label" id="paperProgressLabel">Generating module 1 of 5...</div>
+  <div class="progress-bar"><div class="progress-fill" id="paperProgressFill"></div></div>
+</div>
+</div><!-- /paperMode -->
+
+</div><!-- /setup-card -->
+
+<!-- RIGHT: OUTPUT -->
+<div class="card output-panel" id="outputPanel">
+  <div class="empty-state" id="emptyState">
+    <div class="icon">✨</div>
+    <h3>Ready to generate</h3>
+    <p>Configure your subject, unit and difficulty — then hit Generate.</p>
+  </div>
+  <div id="outputContent" style="display:none;">
+    <div class="output-actions">
+      <button class="btn-ghost" id="printBtn">🖨️ Print / PDF</button>
+      <button class="btn-ghost" id="regenBtn">🔄 Regenerate</button>
+    </div>
+    <div class="paper" id="paperRoot"></div>
+  </div>
+</div>
+
+</div><!-- /workspace -->
+</div><!-- /app -->
+
+<!-- Hidden API Panel (slide-in) -->
+<div class="api-panel" id="apiPanel">
+  <h3>API Configuration <button class="close-btn" id="closeApi">×</button></h3>
+  <label>Provider</label>
+  <select id="provider">
+    <option value="opencode">OpenCode Zen (Free)</option>
+    <option value="gemini">Google Gemini (Free)</option>
+    <option value="openrouter">OpenRouter (Free)</option>
+    <option value="groq">Groq</option>
+    <option value="openai">OpenAI</option>
+    <option value="anthropic">Anthropic</option>
+    <option value="custom">Custom</option>
+  </select>
+  <label>API Key</label>
+  <input type="password" id="apiKey" placeholder="Paste your API key" autocomplete="off">
+  <label>Model</label>
+  <input type="text" id="model" value="grok-code" placeholder="model id">
+  <div id="baseUrlWrap" style="display:none;">
+    <label>Base URL</label>
+    <input type="text" id="baseUrl" placeholder="https://...">
+  </div>
+  <div id="apiStatus" style="font-size:12px;color:var(--text-3);margin-top:12px;"></div>
+</div>
+
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+/* ===== API CONFIG ===== */
+const PROVIDERS={
+  opencode:{base:"https://opencode.ai/zen/v1",format:"openai",model:"grok-code"},
+  gemini:{base:"https://generativelanguage.googleapis.com/v1beta/openai",format:"openai",model:"gemini-2.0-flash"},
+  openrouter:{base:"https://openrouter.ai/api/v1",format:"openai",model:"deepseek/deepseek-chat-v3.1:free"},
+  groq:{base:"https://api.groq.com/openai/v1",format:"openai",model:"llama-3.3-70b-versatile"},
+  openai:{base:"https://api.openai.com/v1",format:"openai",model:"gpt-4o-mini"},
+  anthropic:{base:"https://api.anthropic.com/v1",format:"anthropic",model:"claude-sonnet-4-5"},
+  custom:{base:"",format:"openai",model:""}
+};
+
+function saveApi(){try{localStorage.setItem('qpgen_api',JSON.stringify({provider:$('provider').value,apiKey:$('apiKey').value,model:$('model').value,baseUrl:($('baseUrl')||{}).value||''}))}catch(e){}}
+function loadApi(){try{const s=JSON.parse(localStorage.getItem('qpgen_api')||'{}');if(s.provider)$('provider').value=s.provider;if(s.apiKey)$('apiKey').value=s.apiKey;if(s.model)$('model').value=s.model;if(s.baseUrl&&$('baseUrl'))$('baseUrl').value=s.baseUrl;}catch(e){}}
+function getApi(){const p=PROVIDERS[$('provider').value]||PROVIDERS.opencode;return{format:p.format,base:($('provider').value==='custom'?($('baseUrl')||{}).value||'':p.base).replace(/\/+$/,''),key:$('apiKey').value.trim(),model:$('model').value.trim()||p.model};}
+
+$('provider').onchange=()=>{const p=PROVIDERS[$('provider').value];$('model').value=p.model;$('baseUrlWrap').style.display=$('provider').value==='custom'?'block':'none';saveApi();};
+$('apiKey').oninput=saveApi;$('model').oninput=saveApi;
+
+/* ===== GEAR PANEL ===== */
+$('gearBtn').onclick=()=>$('apiPanel').classList.add('open');
+$('closeApi').onclick=()=>$('apiPanel').classList.remove('open');
+
+/* ===== TABS ===== */
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');
+  const m=t.dataset.mode;
+  $('quickMode').style.display=m==='quick'?'':'none';
+  $('paperMode').style.display=m==='paper'?'':'none';
+});
+
+/* ===== LLM CALL ===== */
+async function callLLM(prompt,maxTokens){
+  const c=getApi();
+  if(!c.key)throw new Error('No API key. Click ⚙️ to add one.');
+  let url,headers,body,extract;
+  if(c.format==='anthropic'){
+    url=c.base+'/messages';
+    headers={'Content-Type':'application/json','x-api-key':c.key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'};
+    body={model:c.model,max_tokens:maxTokens||1500,messages:[{role:'user',content:prompt}]};
+    extract=d=>(d.content||[]).map(b=>b.text||'').join('\n');
+  }else{
+    url=c.base+'/chat/completions';
+    headers={'Content-Type':'application/json','Authorization':'Bearer '+c.key};
+    body={model:c.model,max_tokens:maxTokens||1500,messages:[{role:'user',content:prompt}]};
+    extract=d=>(((d.choices||[])[0]||{}).message||{}).content||'';
+  }
+  const r=await fetch(url,{method:'POST',headers,body:JSON.stringify(body)});
+  if(!r.ok){let d='';try{d=(await r.json()).error?.message||''}catch(e){}throw new Error('API '+r.status+(d?' — '+d:''));}
+  const data=await r.json();const txt=extract(data);if(!txt)throw new Error('Empty model response');return txt;
+}
+
+function parseJSON(raw){
+  const c=raw.replace(/```json/gi,'').replace(/```/g,'').trim();
+  try{return JSON.parse(c);}catch(e){const m=c.match(/[\[{][\s\S]*[\]}]/);if(m)return JSON.parse(m[0]);throw new Error('Invalid JSON from model');}
+}
+
+/* ===== FILE EXTRACTION ===== */
+async function extractText(file){
+  const n=file.name.toLowerCase();
+  if(n.endsWith('.docx')){const buf=await file.arrayBuffer();return(await mammoth.extractRawText({arrayBuffer:buf})).value;}
+  if(n.endsWith('.pdf')){const buf=await file.arrayBuffer();const pdf=await pdfjsLib.getDocument({data:buf}).promise;let t=[];for(let p=1;p<=pdf.numPages;p++){const pg=await pdf.getPage(p);const c=await pg.getTextContent();t.push(c.items.map(i=>i.str).join(' '));}return t.join('\n');}
+  return await file.text();
+}
+
+/* ===== QUICK GENERATE ===== */
+$('quickGenBtn').onclick=runQuickGen;
+async function runQuickGen(){
+  const topic=$('qTopic').value.trim();
+  if(topic.length<15){showToast('Add some syllabus/topic content first (at least a paragraph).');return;}
+  
+  const marks=[];
+  if($('m5').checked)marks.push(5);
+  if($('m7').checked)marks.push(7);
+  if($('m8').checked)marks.push(8);
+  if($('m10').checked)marks.push(10);
+  if(!marks.length){showToast('Select at least one marks value.');return;}
+
+  const subject=$('qSubject').value.trim();
+  const branch=$('qBranch').value.trim();
+  const sem=$('qSem').value.trim();
+  const code=$('qCode').value.trim();
+  const mod=$('qModule').value;
+  const diff=$('qDiff').value;
+  const bloom=$('qBloom').checked;
+  const coMap=$('qCO').checked;
+  const cos=$('qCOs').value.trim();
+  const pastPapers=$('qPastPapers').value.trim();
+
+  $('quickGenBtn').disabled=true;
+  $('quickProgress').style.display='block';
+  $('quickProgressLabel').textContent='Generating questions...';
+  $('quickProgressFill').style.width='30%';
+
+  const bloomInstr=bloom?'\nFor EVERY question, add a "bloom" field with the Bloom\'s taxonomy level (one of: Remember, Understand, Apply, Analyze, Evaluate, Create).':'';
+  const coInstr=(coMap&&cos)?`\nThe Course Outcomes are:\n${cos}\nFor EVERY question add a "co" field with the most relevant CO code (e.g. "CO3").`:'';
+  const pastInstr=pastPapers?`\n\nHere are REAL past VTU questions for this subject as a STYLE REFERENCE. Mimic their phrasing, tone, and difficulty calibration — but do NOT copy them verbatim:\n"""\n${pastPapers}\n"""`:'';
+
+  const prompt=`You are an experienced VTU examiner for ${branch} students.
+Subject: ${subject} (${code}), Semester ${sem}, Module ${mod}.
+Difficulty: ${diff}.
+
+Syllabus content for this module:
+"""
+${topic}
+"""${pastInstr}
+
+Generate ONE question for EACH of these marks values: ${marks.join(', ')} marks.
+
+Rules:
+- Each question must be strictly based on the syllabus content above.
+- Questions can be single-part or split into sub-parts (a, b, c) whose marks sum to the total.
+- Vary question types: conceptual, numerical/apply, compare, derive, illustrate as appropriate.
+- Exam-style phrasing, 1-2 sentences per part, no answers.
+- For higher marks (8, 10), prefer 2-3 sub-parts. For 5 marks, a single focused question is fine.${bloomInstr}${coInstr}
+
+Return ONLY valid JSON array, no markdown fences:
+[
+  {"marks":5,"parts":[{"label":"","text":"...","marks":5${bloom?',"bloom":"Apply"':''}${coMap&&cos?',"co":"CO3"':''}}]},
+  {"marks":7,"parts":[{"label":"a","text":"...","marks":4${bloom?',"bloom":"Understand"':''}${coMap&&cos?',"co":"CO2"':''}},{"label":"b","text":"...","marks":3${bloom?',"bloom":"Apply"':''}${coMap&&cos?',"co":"CO3"':''}}]}
+]`;
+
+  try{
+    const raw=await callLLM(prompt,2000);
+    $('quickProgressFill').style.width='80%';
+    const questions=parseJSON(raw);
+    $('quickProgressFill').style.width='100%';
+    renderQuickOutput(questions,{subject,code,branch,sem,mod,diff,bloom,coMap});
+    setTimeout(()=>{$('quickProgress').style.display='none';},800);
+  }catch(err){
+    showToast('Generation failed: '+err.message);
+    $('quickProgress').style.display='none';
+  }finally{
+    $('quickGenBtn').disabled=false;
+  }
+}
+
+function renderQuickOutput(questions,meta){
+  $('emptyState').style.display='none';
+  $('outputContent').style.display='block';
+
+  const BLOOM_L={remember:'L1',understand:'L2',apply:'L3',analyze:'L4',analyse:'L4',evaluate:'L5',create:'L6'};
+  function bL(b){if(!b)return'';const k=b.toLowerCase();return BLOOM_L[k]||(/^l[1-6]$/i.test(b)?b.toUpperCase():'');}
+
+  let rows='';
+  let qNum=1;
+  for(const q of questions){
+    const parts=q.parts||[q];
+    const n=parts.length;
+    rows+=parts.map((p,i)=>{
+      const qcell=i===0?`<td class="col-q" rowspan="${n}">Q.${qNum}</td>`:'';
+      return`<tr>${qcell}<td class="col-l">${esc(p.label||'')}</td><td>${esc(p.text)}</td><td class="col-m">${p.marks}</td><td class="col-bl">${bL(p.bloom)}</td><td class="col-co">${esc(p.co||'')}</td></tr>`;
+    }).join('');
+    qNum++;
+  }
+
+  $('paperRoot').innerHTML=`
+    <div class="exam-title">${esc(meta.subject)} (${esc(meta.code)})</div>
+    <div class="subject-title">${esc(meta.branch)} · Semester ${esc(meta.sem)} · Module ${esc(meta.mod)} · ${esc(meta.diff)} Difficulty</div>
+    <div class="time-marks"><span>AI-Generated Questions</span><span>Bloom's + CO Mapped</span></div>
+    <table><tr class="mod-row"><td colspan="2">Q.No</td><td>Question</td><td class="col-m">M</td><td class="col-bl">L</td><td class="col-co">CO</td></tr>${rows}</table>`;
+}
+
+/* ===== FULL PAPER MODE ===== */
+const state={modules:["","","","",""],results:[null,null,null,null,null]};
+
+const SAMPLE_MODULES=[
+`Introduction to Machine Learning: What is machine learning, examples of machine learning problems, structure of learning, learning versus designing, training vs testing, characteristics of machine learning tasks, predictive and descriptive tasks, machine learning models, geometric models, probabilistic models, logical models, grouping and grading, learning as search, types of learning: supervised, unsupervised, reinforcement, theory of generalisation, bias-variance tradeoff.`,
+`Linear Models and Bayesian Learning: Least squares method, univariate and multivariate linear regression, gradient descent, logistic regression for classification, Bayes theorem, maximum a posteriori and maximum likelihood estimation, naive Bayes classifier and its application to text classification, Bayesian belief networks, EM algorithm for hidden variables.`,
+`Decision Trees and Instance-Based Learning: Decision tree representation, appropriate problems, ID3 algorithm, entropy and information gain as splitting criteria, avoiding overfitting via pruning, handling continuous-valued and missing attributes, k-nearest neighbour learning, distance-weighted nearest neighbour, locally weighted regression, case-based reasoning.`,
+`Artificial Neural Networks: Perceptron and perceptron training rule, gradient descent and delta rule, multilayer networks, backpropagation algorithm and derivation, activation functions (sigmoid, ReLU, tanh), representational power of feedforward networks, convergence and overfitting issues, introduction to convolutional neural networks and typical applications.`,
+`Support Vector Machines and Unsupervised Learning: Maximum margin classifiers, support vector machine formulation, kernel trick and common kernel functions, soft margin classification, k-means clustering, hierarchical agglomerative clustering, principal component analysis for dimensionality reduction, brief introduction to reinforcement learning: agent, environment, reward, policy.`
+];
+
+function renderModuleEditors(){
+  const wrap=$('moduleEditors');wrap.innerHTML='';
+  for(let i=0;i<5;i++){
+    const filled=state.modules[i]&&state.modules[i].trim().length>0;
+    const det=document.createElement('details');
+    det.innerHTML=`<summary>${filled?'✓':'—'} Module ${i+1} ${filled?'('+state.modules[i].trim().split(/\s+/).length+' words)':'(empty)'}</summary><textarea data-idx="${i}" rows="3" placeholder="Module ${i+1} content...">${state.modules[i]||''}</textarea>`;
+    det.querySelector('textarea').oninput=e=>{state.modules[parseInt(e.target.dataset.idx)]=e.target.value;updateGenBtn();};
+    wrap.appendChild(det);
+  }
+}
+function updateGenBtn(){$('generateBtn').disabled=!state.modules.every(m=>m&&m.trim().length>15);}
+
+$('loadSampleBtn').onclick=()=>{state.modules=SAMPLE_MODULES.slice();renderModuleEditors();updateGenBtn();$('pFileStatus').textContent='✓ Sample ML syllabus loaded.';$('pFileStatus').style.color='var(--green)';};
+
+/* Paper dropzone */
+$('pDropzone').onclick=()=>$('pFileInput').click();
+$('pFileInput').onchange=async e=>{if(!e.target.files.length)return;const f=e.target.files[0];$('pFileStatus').textContent='Reading '+f.name+'...';const txt=await extractText(f);const chunks=splitModules(txt);state.modules=chunks;renderModuleEditors();updateGenBtn();$('pFileStatus').textContent='✓ Extracted into 5 modules';$('pFileStatus').style.color='var(--green)';};
+['dragover','dragenter'].forEach(ev=>$('pDropzone').addEventListener(ev,e=>{e.preventDefault();$('pDropzone').classList.add('drag');}));
+['dragleave','drop'].forEach(ev=>$('pDropzone').addEventListener(ev,e=>{e.preventDefault();$('pDropzone').classList.remove('drag');}));
+$('pDropzone').ondrop=async e=>{e.preventDefault();if(e.dataTransfer.files.length){const f=e.dataTransfer.files[0];$('pFileStatus').textContent='Reading...';const txt=await extractText(f);state.modules=splitModules(txt);renderModuleEditors();updateGenBtn();$('pFileStatus').textContent='✓ Done';$('pFileStatus').style.color='var(--green)';}};
+
+/* Quick mode dropzone */
+$('qDropzone').onclick=()=>$('qFileInput').click();
+$('qFileInput').onchange=async e=>{if(!e.target.files.length)return;const f=e.target.files[0];$('qFileStatus').textContent='Reading...';const txt=await extractText(f);const chunks=splitModules(txt);const mod=parseInt($('qModule').value)-1;$('qTopic').value=chunks[mod]||chunks[0]||txt;$('qFileStatus').textContent='✓ Loaded module '+$('qModule').value+' content';$('qFileStatus').style.color='var(--green)';};
+['dragover','dragenter'].forEach(ev=>$('qDropzone').addEventListener(ev,e=>{e.preventDefault();$('qDropzone').classList.add('drag');}));
+['dragleave','drop'].forEach(ev=>$('qDropzone').addEventListener(ev,e=>{e.preventDefault();$('qDropzone').classList.remove('drag');}));
+
+/* Past papers dropzone */
+$('pastDropzone').onclick=()=>$('pastFileInput').click();
+$('pastFileInput').onchange=async e=>{if(!e.target.files.length)return;const f=e.target.files[0];try{const txt=await extractText(f);const ta=$('qPastPapers');ta.value=(ta.value.trim()?ta.value.trim()+'\n\n':'')+txt.trim();showToast('✓ Added past paper content from '+f.name);}catch(err){showToast('Could not read file: '+err.message);}};
+['dragover','dragenter'].forEach(ev=>$('pastDropzone').addEventListener(ev,e=>{e.preventDefault();$('pastDropzone').classList.add('drag');}));
+['dragleave','drop'].forEach(ev=>$('pastDropzone').addEventListener(ev,e=>{e.preventDefault();$('pastDropzone').classList.remove('drag');}));
+$('pastDropzone').ondrop=async e=>{e.preventDefault();$('pastDropzone').classList.remove('drag');if(e.dataTransfer.files.length){const f=e.dataTransfer.files[0];try{const txt=await extractText(f);const ta=$('qPastPapers');ta.value=(ta.value.trim()?ta.value.trim()+'\n\n':'')+txt.trim();showToast('✓ Added past paper from '+f.name);}catch(err){showToast('Error: '+err.message);}};};
+
+function splitModules(text){
+  text=text.replace(/\r/g,'');
+  const re=/module\s*[-–—:]?\s*([1-5])\b/gi;let match,hits=[];
+  while((match=re.exec(text))!==null){const n=parseInt(match[1]);if(!hits.find(h=>h.num===n))hits.push({num:n,index:match.index});}
+  const ordered=[1,2,3,4,5].map(n=>hits.find(h=>h.num===n)).filter(Boolean);
+  if(ordered.length<5){const w=text.split(/\s+/);const p=Math.ceil(w.length/5);return[0,1,2,3,4].map(i=>w.slice(i*p,(i+1)*p).join(' '));}
+  return ordered.map((h,i)=>{const start=h.index;const end=i<4?ordered[i+1].index:text.length;return text.slice(start,end).replace(/^module\s*[-–—:]?\s*[1-5][^\n]*\n?/i,'').trim();});
+}
+
+/* Full paper generation */
+$('generateBtn').onclick=runPaperGen;
+$('regenBtn').onclick=runPaperGen;
+
+async function runPaperGen(){
+  const meta={college:$('collegeName').value,affil:$('affil').value,branch:$('pBranch').value,sem:$('pSem').value,subject:$('pSubject').value,code:$('pCode').value,maxMarks:$('maxMarks').value,duration:$('duration').value,scheme:$('schemeLabel').value,degree:$('degree').value,examNote:$('examNote').value,bloom:$('optBloom').checked,coMap:$('optCO').checked,cos:$('pCOs').value.trim()};
+
+  $('generateBtn').disabled=true;
+  $('paperProgress').style.display='block';
+
+  for(let i=0;i<5;i++){
+    $('paperProgressLabel').textContent=`Generating module ${i+1} of 5...`;
+    $('paperProgressFill').style.width=Math.round((i/5)*100)+'%';
+    try{state.results[i]=await genModule(state.modules[i],i+1,meta);}
+    catch(err){try{state.results[i]=await genModule(state.modules[i],i+1,meta);}catch(e2){showToast('Module '+(i+1)+' failed: '+e2.message);$('generateBtn').disabled=false;$('paperProgress').style.display='none';return;}}
+  }
+  $('paperProgressFill').style.width='100%';
+  $('paperProgressLabel').textContent='Done!';
+  setTimeout(()=>{$('paperProgress').style.display='none';},1000);
+  renderFullPaper(meta);
+  $('generateBtn').disabled=false;
+}
+
+async function genModule(moduleText,moduleNum,meta){
+  const bloomI=meta.bloom?'\nAdd "bloom" field (Remember/Understand/Apply/Analyze/Evaluate/Create) to every sub-question.':'';
+  const coI=(meta.coMap&&meta.cos)?`\nCourse Outcomes:\n${meta.cos}\nAdd "co" field (e.g. "CO3") to every sub-question.`:'';
+  const prompt=`You are a VTU examiner for ${meta.branch}. Subject: ${meta.subject} (${meta.code}), Sem ${meta.sem}.
+Module ${moduleNum} content:
+"""
+${moduleText}
+"""
+
+Write two ALTERNATIVE full questions (questionA, questionB) for this module. Student answers ONE. Each totals exactly 20 marks. Split into 2-3 sub-parts naturally (a,b or a,b,c). Vary between 2-part and 3-part. Different topics for A vs B.${bloomI}${coI}
+
+Return ONLY valid JSON:
+{"questionA":[{"label":"a","text":"...","marks":10${meta.bloom?',"bloom":"Apply"':''}${meta.coMap&&meta.cos?',"co":"CO3"':''}}],"questionB":[{"label":"a","text":"...","marks":7${meta.bloom?',"bloom":"Understand"':''}${meta.coMap&&meta.cos?',"co":"CO2"':''}}]}`;
+  return parseJSON(await callLLM(prompt,1400));
+}
+
+function renderFullPaper(meta){
+  $('emptyState').style.display='none';$('outputContent').style.display='block';
+  const BLOOM_L={remember:'L1',understand:'L2',apply:'L3',analyze:'L4',analyse:'L4',evaluate:'L5',create:'L6'};
+  function bL(b){if(!b)return'';return BLOOM_L[b.toLowerCase()]||'';}
+  let usn='';for(let i=0;i<10;i++)usn+='<div></div>';
+  let rows='';
+  for(let i=0;i<5;i++){
+    const r=state.results[i];if(!r)continue;
+    rows+=`<tr class="mod-row"><td colspan="${i===0?3:6}">Module – ${i+1}</td>${i===0?'<td class="col-m">M</td><td class="col-bl">L</td><td class="col-co">CO</td>':''}</tr>`;
+    rows+=qRows(i*2+1,r.questionA);
+    rows+=`<tr class="or-row"><td colspan="6">OR</td></tr>`;
+    rows+=qRows(i*2+2,r.questionB);
+  }
+  function qRows(qn,q){if(!q||!q.length)return'';const n=q.length;return q.map((s,i)=>`<tr>${i===0?`<td class="col-q" rowspan="${n}">Q.${qn}</td>`:''}<td class="col-l">${esc(s.label)}</td><td>${esc(s.text)}</td><td class="col-m">${s.marks}</td><td class="col-bl">${bL(s.bloom)}</td><td class="col-co">${esc(s.co||'')}</td></tr>`).join('');}
+
+  const heading=`Seventh Semester ${meta.degree||'B.E.'} Degree Examination`;
+  const notes=(meta.examNote||'').split('\n').filter(Boolean).map(l=>'<li>'+esc(l)+'</li>').join('');
+
+  $('paperRoot').innerHTML=`
+    <div class="college-name">${esc(meta.college)}</div>
+    <div class="affil">${esc(meta.affil)}</div>
+    <div class="scheme-box"><span>${esc(meta.scheme)}</span></div>
+    <div class="usn-row"><div style="display:flex;align-items:center;gap:6px;"><strong style="font-size:12px;letter-spacing:1px;">USN</strong><div class="usn-boxes">${usn}</div></div><strong style="font-size:13px;">${esc(meta.code)}</strong></div>
+    <div class="exam-title">${esc(heading)}</div>
+    <div class="subject-title">${esc(meta.subject)}</div>
+    <div class="time-marks"><span>Time: ${esc(meta.duration)}</span><span>Max. Marks: ${esc(meta.maxMarks)}</span></div>
+    ${notes?`<div class="note"><strong>Note:</strong><ol>${notes}</ol></div>`:''}
+    <table>${rows}</table>`;
+}
+
+$('printBtn').onclick=()=>window.print();
+
+/* ===== UTILS ===== */
+function $(id){return document.getElementById(id);}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function showToast(msg){const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),5000);}
+
+/* ===== INIT ===== */
+loadApi();
+renderModuleEditors();
+</script>
+</body>
+</html>
