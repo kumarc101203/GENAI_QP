@@ -269,7 +269,7 @@ The system classifies questions into VTU's standard cognitive levels:
 
 ## Credits
 
-**Developed by:** Pavan Miskin  
+**Developed by:** Shramic Networks 
 **Course:** BCS602 — Generative AI (NITTTR Assignment)  
 **Primary Reference Subject:** BCS701 — Machine Learning  
 **Target University:** Visvesvaraya Technological University (VTU), Belagavi

@@ -1,7 +1,7 @@
 # Ignore everything
 *
 
-# Except demo.html and README
-!demo.html
+# Except the app and docs
+!index.html
 !README.md
 !.gitignore
