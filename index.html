@@ -179,10 +179,10 @@ textarea{resize:vertical;min-height:60px;}
 <aside class="sidebar">
   <div class="brand"><h2>GenAIQP</h2><p>GENERATION ENGINE</p></div>
   <nav>
-    <a href="#" class="active"><span class="icon">⚡</span> Generator</a>
-    <a href="#" onclick="return false;"><span class="icon">📦</span> Question Bank</a>
-    <a href="#" onclick="return false;"><span class="icon">📊</span> Analytics</a>
-    <a href="#" onclick="return false;"><span class="icon">📐</span> Blueprints</a>
+    <a href="#" data-page="generator" class="active"><span class="icon">⚡</span> Generator</a>
+    <a href="#" data-page="bank"><span class="icon">📦</span> Question Bank</a>
+    <a href="#" data-page="analytics"><span class="icon">📊</span> Analytics</a>
+    <a href="#" data-page="blueprints"><span class="icon">📐</span> Blueprints</a>
   </nav>
   <div class="sidebar-footer"><a id="settingsBtn"><span>⚙</span> Advanced Settings</a></div>
 </aside>
@@ -352,6 +352,192 @@ M : Marks , L: Bloom's level , C: Course outcomes.</textarea>
 </div>
 </div>
 
+<!-- QUESTION BANK PAGE -->
+<div class="page-content" id="page-bank" style="display:none;padding:28px;">
+  <h2 style="font-size:18px;font-weight:600;margin-bottom:6px;">Question Bank</h2>
+  <p style="color:var(--text-2);font-size:13px;margin-bottom:24px;">All generated questions are saved here for reuse, review, and paper assembly.</p>
+  
+  <div style="display:flex;gap:10px;margin-bottom:20px;">
+    <input type="text" id="bankSearch" placeholder="Search questions by topic, module, bloom level..." style="flex:1;">
+    <select style="width:140px;" id="bankFilter"><option value="">All Modules</option><option>Module 1</option><option>Module 2</option><option>Module 3</option><option>Module 4</option><option>Module 5</option></select>
+  </div>
+
+  <div id="bankList">
+    <div class="card" style="margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:start;">
+        <div>
+          <div style="font-size:13px;font-weight:500;margin-bottom:6px;">Explain the bias-variance tradeoff in machine learning with a suitable diagram.</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <span style="font-size:10px;padding:3px 8px;border-radius:10px;background:var(--accent-dim);color:var(--accent);">Module 1</span>
+            <span style="font-size:10px;padding:3px 8px;border-radius:10px;background:rgba(52,211,153,0.1);color:var(--green);">L2 — Understand</span>
+            <span style="font-size:10px;padding:3px 8px;border-radius:10px;background:var(--surface-2);color:var(--text-2);">CO1</span>
+            <span style="font-size:10px;padding:3px 8px;border-radius:10px;background:var(--surface-2);color:var(--text-2);">7 Marks</span>
+          </div>
+        </div>
+        <span style="font-size:10px;color:var(--text-3);">Today</span>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:start;">
+        <div>
+          <div style="font-size:13px;font-weight:500;margin-bottom:6px;">Apply the KNN algorithm to classify a new sample given the following dataset. Show all distance calculations.</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <span style="font-size:10px;padding:3px 8px;border-radius:10px;background:var(--accent-dim);color:var(--accent);">Module 3</span>
+            <span style="font-size:10px;padding:3px 8px;border-radius:10px;background:rgba(52,211,153,0.1);color:var(--green);">L3 — Apply</span>
+            <span style="font-size:10px;padding:3px 8px;border-radius:10px;background:var(--surface-2);color:var(--text-2);">CO3</span>
+            <span style="font-size:10px;padding:3px 8px;border-radius:10px;background:var(--surface-2);color:var(--text-2);">10 Marks</span>
+          </div>
+        </div>
+        <span style="font-size:10px;color:var(--text-3);">Today</span>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:start;">
+        <div>
+          <div style="font-size:13px;font-weight:500;margin-bottom:6px;">Derive the backpropagation weight update rule for a two-layer feedforward neural network with sigmoid activation.</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <span style="font-size:10px;padding:3px 8px;border-radius:10px;background:var(--accent-dim);color:var(--accent);">Module 4</span>
+            <span style="font-size:10px;padding:3px 8px;border-radius:10px;background:rgba(52,211,153,0.1);color:var(--green);">L4 — Analyze</span>
+            <span style="font-size:10px;padding:3px 8px;border-radius:10px;background:var(--surface-2);color:var(--text-2);">CO4</span>
+            <span style="font-size:10px;padding:3px 8px;border-radius:10px;background:var(--surface-2);color:var(--text-2);">10 Marks</span>
+          </div>
+        </div>
+        <span style="font-size:10px;color:var(--text-3);">Yesterday</span>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:start;">
+        <div>
+          <div style="font-size:13px;font-weight:500;margin-bottom:6px;">Compare and contrast k-means clustering with hierarchical agglomerative clustering. State advantages of each.</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <span style="font-size:10px;padding:3px 8px;border-radius:10px;background:var(--accent-dim);color:var(--accent);">Module 5</span>
+            <span style="font-size:10px;padding:3px 8px;border-radius:10px;background:rgba(52,211,153,0.1);color:var(--green);">L4 — Analyze</span>
+            <span style="font-size:10px;padding:3px 8px;border-radius:10px;background:var(--surface-2);color:var(--text-2);">CO5</span>
+            <span style="font-size:10px;padding:3px 8px;border-radius:10px;background:var(--surface-2);color:var(--text-2);">8 Marks</span>
+          </div>
+        </div>
+        <span style="font-size:10px;color:var(--text-3);">Yesterday</span>
+      </div>
+    </div>
+  </div>
+  <p style="font-size:11px;color:var(--text-3);margin-top:16px;font-family:var(--mono);">Showing 4 questions · Generated questions auto-save here</p>
+</div>
+
+<!-- ANALYTICS PAGE -->
+<div class="page-content" id="page-analytics" style="display:none;padding:28px;">
+  <h2 style="font-size:18px;font-weight:600;margin-bottom:6px;">Generation Analytics</h2>
+  <p style="color:var(--text-2);font-size:13px;margin-bottom:24px;">Insights from AI question generation sessions.</p>
+
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px;">
+    <div class="card" style="text-align:center;padding:18px;">
+      <div style="font-size:24px;font-weight:700;color:var(--accent);" id="statTotal">12</div>
+      <div style="font-size:10px;color:var(--text-3);font-family:var(--mono);margin-top:4px;">QUESTIONS GENERATED</div>
+    </div>
+    <div class="card" style="text-align:center;padding:18px;">
+      <div style="font-size:24px;font-weight:700;color:var(--green);">5</div>
+      <div style="font-size:10px;color:var(--text-3);font-family:var(--mono);margin-top:4px;">MODULES COVERED</div>
+    </div>
+    <div class="card" style="text-align:center;padding:18px;">
+      <div style="font-size:24px;font-weight:700;color:var(--accent);">3</div>
+      <div style="font-size:10px;color:var(--text-3);font-family:var(--mono);margin-top:4px;">PAPERS ASSEMBLED</div>
+    </div>
+    <div class="card" style="text-align:center;padding:18px;">
+      <div style="font-size:24px;font-weight:700;color:var(--cta);">2.1s</div>
+      <div style="font-size:10px;color:var(--text-3);font-family:var(--mono);margin-top:4px;">AVG RESPONSE TIME</div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+    <div class="card">
+      <div class="card-label">📊 BLOOM'S LEVEL DISTRIBUTION</div>
+      <div style="margin-top:10px;">
+        <div style="display:flex;align-items:center;gap:10px;margin:8px 0;"><span style="font-size:11px;width:80px;color:var(--text-2);">L1 Remember</span><div style="flex:1;height:6px;background:var(--surface-3);border-radius:3px;"><div style="width:8%;height:100%;background:var(--text-3);border-radius:3px;"></div></div><span style="font-size:10px;color:var(--text-3);">8%</span></div>
+        <div style="display:flex;align-items:center;gap:10px;margin:8px 0;"><span style="font-size:11px;width:80px;color:var(--text-2);">L2 Understand</span><div style="flex:1;height:6px;background:var(--surface-3);border-radius:3px;"><div style="width:22%;height:100%;background:var(--accent);border-radius:3px;"></div></div><span style="font-size:10px;color:var(--text-3);">22%</span></div>
+        <div style="display:flex;align-items:center;gap:10px;margin:8px 0;"><span style="font-size:11px;width:80px;color:var(--text-2);">L3 Apply</span><div style="flex:1;height:6px;background:var(--surface-3);border-radius:3px;"><div style="width:35%;height:100%;background:var(--green);border-radius:3px;"></div></div><span style="font-size:10px;color:var(--text-3);">35%</span></div>
+        <div style="display:flex;align-items:center;gap:10px;margin:8px 0;"><span style="font-size:11px;width:80px;color:var(--text-2);">L4 Analyze</span><div style="flex:1;height:6px;background:var(--surface-3);border-radius:3px;"><div style="width:25%;height:100%;background:var(--accent);border-radius:3px;"></div></div><span style="font-size:10px;color:var(--text-3);">25%</span></div>
+        <div style="display:flex;align-items:center;gap:10px;margin:8px 0;"><span style="font-size:11px;width:80px;color:var(--text-2);">L5 Evaluate</span><div style="flex:1;height:6px;background:var(--surface-3);border-radius:3px;"><div style="width:7%;height:100%;background:var(--cta);border-radius:3px;"></div></div><span style="font-size:10px;color:var(--text-3);">7%</span></div>
+        <div style="display:flex;align-items:center;gap:10px;margin:8px 0;"><span style="font-size:11px;width:80px;color:var(--text-2);">L6 Create</span><div style="flex:1;height:6px;background:var(--surface-3);border-radius:3px;"><div style="width:3%;height:100%;background:var(--cta);border-radius:3px;"></div></div><span style="font-size:10px;color:var(--text-3);">3%</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-label">🎯 CO COVERAGE</div>
+      <div style="margin-top:10px;">
+        <div style="display:flex;align-items:center;gap:10px;margin:8px 0;"><span style="font-size:11px;width:36px;color:var(--text-2);">CO1</span><div style="flex:1;height:6px;background:var(--surface-3);border-radius:3px;"><div style="width:20%;height:100%;background:var(--accent);border-radius:3px;"></div></div><span style="font-size:10px;color:var(--text-3);">20%</span></div>
+        <div style="display:flex;align-items:center;gap:10px;margin:8px 0;"><span style="font-size:11px;width:36px;color:var(--text-2);">CO2</span><div style="flex:1;height:6px;background:var(--surface-3);border-radius:3px;"><div style="width:22%;height:100%;background:var(--accent);border-radius:3px;"></div></div><span style="font-size:10px;color:var(--text-3);">22%</span></div>
+        <div style="display:flex;align-items:center;gap:10px;margin:8px 0;"><span style="font-size:11px;width:36px;color:var(--text-2);">CO3</span><div style="flex:1;height:6px;background:var(--surface-3);border-radius:3px;"><div style="width:28%;height:100%;background:var(--green);border-radius:3px;"></div></div><span style="font-size:10px;color:var(--text-3);">28%</span></div>
+        <div style="display:flex;align-items:center;gap:10px;margin:8px 0;"><span style="font-size:11px;width:36px;color:var(--text-2);">CO4</span><div style="flex:1;height:6px;background:var(--surface-3);border-radius:3px;"><div style="width:18%;height:100%;background:var(--accent);border-radius:3px;"></div></div><span style="font-size:10px;color:var(--text-3);">18%</span></div>
+        <div style="display:flex;align-items:center;gap:10px;margin:8px 0;"><span style="font-size:11px;width:36px;color:var(--text-2);">CO5</span><div style="flex:1;height:6px;background:var(--surface-3);border-radius:3px;"><div style="width:12%;height:100%;background:var(--text-3);border-radius:3px;"></div></div><span style="font-size:10px;color:var(--text-3);">12%</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <div class="card-label">📈 GENERATION HISTORY</div>
+    <table style="width:100%;font-size:12px;border-collapse:collapse;margin-top:10px;">
+      <tr style="border-bottom:1px solid var(--border);"><td style="padding:8px 0;color:var(--text-2);">Full Paper — Machine Learning (BCS701)</td><td style="text-align:right;color:var(--text-3);">Today, 11:42 AM</td></tr>
+      <tr style="border-bottom:1px solid var(--border);"><td style="padding:8px 0;color:var(--text-2);">Quick Gen — Module 3, Medium, 5/7/8/10 marks</td><td style="text-align:right;color:var(--text-3);">Today, 11:38 AM</td></tr>
+      <tr style="border-bottom:1px solid var(--border);"><td style="padding:8px 0;color:var(--text-2);">Quick Gen — Module 1, Easy, 5/7 marks</td><td style="text-align:right;color:var(--text-3);">Yesterday</td></tr>
+      <tr><td style="padding:8px 0;color:var(--text-2);">Full Paper — Data Structures (BCS401)</td><td style="text-align:right;color:var(--text-3);">Jul 12</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- BLUEPRINTS PAGE -->
+<div class="page-content" id="page-blueprints" style="display:none;padding:28px;">
+  <h2 style="font-size:18px;font-weight:600;margin-bottom:6px;">Paper Blueprints</h2>
+  <p style="color:var(--text-2);font-size:13px;margin-bottom:24px;">VTU examination paper structure templates used for constraint-based generation.</p>
+
+  <div class="card" style="margin-bottom:16px;border-left:3px solid var(--accent);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div>
+        <div style="font-size:14px;font-weight:600;">Standard Theory SEE (100 Marks)</div>
+        <div style="font-size:11px;color:var(--text-3);margin-top:2px;">VTU 2022 CBCS Scheme · 3 Hours · 5 Modules</div>
+      </div>
+      <span style="font-size:10px;padding:4px 10px;border-radius:10px;background:rgba(52,211,153,0.1);color:var(--green);">ACTIVE</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:14px;">
+      <div style="background:var(--surface-2);border-radius:6px;padding:10px;text-align:center;"><div style="font-size:10px;color:var(--text-3);font-family:var(--mono);">MODULE 1</div><div style="font-size:12px;font-weight:500;margin-top:4px;">Q1, Q2</div><div style="font-size:10px;color:var(--text-3);">20 marks each</div></div>
+      <div style="background:var(--surface-2);border-radius:6px;padding:10px;text-align:center;"><div style="font-size:10px;color:var(--text-3);font-family:var(--mono);">MODULE 2</div><div style="font-size:12px;font-weight:500;margin-top:4px;">Q3, Q4</div><div style="font-size:10px;color:var(--text-3);">20 marks each</div></div>
+      <div style="background:var(--surface-2);border-radius:6px;padding:10px;text-align:center;"><div style="font-size:10px;color:var(--text-3);font-family:var(--mono);">MODULE 3</div><div style="font-size:12px;font-weight:500;margin-top:4px;">Q5, Q6</div><div style="font-size:10px;color:var(--text-3);">20 marks each</div></div>
+      <div style="background:var(--surface-2);border-radius:6px;padding:10px;text-align:center;"><div style="font-size:10px;color:var(--text-3);font-family:var(--mono);">MODULE 4</div><div style="font-size:12px;font-weight:500;margin-top:4px;">Q7, Q8</div><div style="font-size:10px;color:var(--text-3);">20 marks each</div></div>
+      <div style="background:var(--surface-2);border-radius:6px;padding:10px;text-align:center;"><div style="font-size:10px;color:var(--text-3);font-family:var(--mono);">MODULE 5</div><div style="font-size:12px;font-weight:500;margin-top:4px;">Q9, Q10</div><div style="font-size:10px;color:var(--text-3);">20 marks each</div></div>
+    </div>
+    <div style="margin-top:14px;font-size:11px;color:var(--text-2);line-height:1.6;">
+      <strong>Rules:</strong> Answer 5 full questions, one from each module · Each question 20 marks (2-3 sub-parts) · Marks patterns: 10+10, 7+7+6, 6+7+7, 4+6+10 · OR alternatives in each module
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px;border-left:3px solid var(--text-3);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <div>
+        <div style="font-size:14px;font-weight:600;">CIE / Internal Assessment (50 Marks)</div>
+        <div style="font-size:11px;color:var(--text-3);margin-top:2px;">VTU CIE Pattern · 1.5 Hours · 3 Modules per test</div>
+      </div>
+      <span style="font-size:10px;padding:4px 10px;border-radius:10px;background:var(--surface-2);color:var(--text-3);">TEMPLATE</span>
+    </div>
+    <div style="font-size:11px;color:var(--text-2);line-height:1.6;margin-top:8px;">
+      5 questions × 10 marks · Covers 2-3 modules per test · Mix of short and long answer · No OR choice
+    </div>
+  </div>
+
+  <div class="card" style="border-left:3px solid var(--text-3);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <div>
+        <div style="font-size:14px;font-weight:600;">MCQ Battery (1-Credit Course)</div>
+        <div style="font-size:11px;color:var(--text-3);margin-top:2px;">VTU 1-Credit Pattern · 1 Hour · All 5 Modules</div>
+      </div>
+      <span style="font-size:10px;padding:4px 10px;border-radius:10px;background:var(--surface-2);color:var(--text-3);">TEMPLATE</span>
+    </div>
+    <div style="font-size:11px;color:var(--text-2);line-height:1.6;margin-top:8px;">
+      50 MCQs × 1 mark · 10 per module · All questions compulsory · L1-L3 cognitive levels
+    </div>
+  </div>
+
+  <div style="margin-top:20px;padding:16px;border:1px dashed var(--border-2);border-radius:10px;text-align:center;">
+    <div style="font-size:12px;color:var(--text-3);">Custom blueprints can be configured for any VTU scheme or assessment type</div>
+  </div>
+</div>
+
 <!-- Footer -->
 <div class="footer">
   <span>AI ENGINE v1.0 // GENERATION ACTIVE</span>
@@ -456,6 +642,19 @@ async function genMod(txt,num,meta){const bI=meta.bloom?'\nAdd "bloom" to every 
 function renderPaper(meta){$('emptyState').style.display='none';$('outputContent').style.display='block';const BL={remember:'L1',understand:'L2',apply:'L3',analyze:'L4',analyse:'L4',evaluate:'L5',create:'L6'};const bL=b=>b?BL[b.toLowerCase()]||'':'';let usn='';for(let i=0;i<10;i++)usn+='<div></div>';let rows='';for(let i=0;i<5;i++){const r=state.results[i];if(!r)continue;rows+=`<tr class="mod-row"><td colspan="${i===0?3:6}">Module – ${i+1}</td>${i===0?'<td class="col-m">M</td><td class="col-bl">L</td><td class="col-co">CO</td>':''}</tr>`;const qR=(qn,q)=>!q?'':q.map((s,j)=>`<tr>${j===0?`<td class="col-q" rowspan="${q.length}">Q.${qn}</td>`:''}<td class="col-l">${esc(s.label)}</td><td>${esc(s.text)}</td><td class="col-m">${s.marks}</td><td class="col-bl">${bL(s.bloom)}</td><td class="col-co">${esc(s.co||'')}</td></tr>`).join('');rows+=qR(i*2+1,r.questionA)+`<tr class="or-row"><td colspan="6">OR</td></tr>`+qR(i*2+2,r.questionB);}const notes=(meta.examNote||'').split('\n').filter(Boolean).map(l=>'<li>'+esc(l)+'</li>').join('');$('paperRoot').innerHTML=`<div class="college-name">${esc(meta.college)}</div><div class="affil">${esc(meta.affil)}</div><div class="scheme-box"><span>${esc(meta.scheme)}</span></div><div class="usn-row"><div style="display:flex;align-items:center;gap:6px;"><strong style="font-size:11px;letter-spacing:1px;">USN</strong><div class="usn-boxes">${usn}</div></div><strong style="font-size:12px;">${esc(meta.code)}</strong></div><div class="exam-title">Seventh Semester ${meta.degree} Degree Examination</div><div class="subject-title">${esc(meta.subject)}</div><div class="time-marks"><span>Time: ${esc(meta.duration)}</span><span>Max. Marks: ${esc(meta.maxMarks)}</span></div>${notes?`<div class="note"><strong>Note:</strong><ol>${notes}</ol></div>`:''}<table>${rows}</table>`;}
 
 $('printBtn').onclick=()=>window.print();
+
+/* Sidebar page switching */
+document.querySelectorAll('.sidebar nav a').forEach(a=>a.onclick=e=>{
+  e.preventDefault();
+  document.querySelectorAll('.sidebar nav a').forEach(x=>x.classList.remove('active'));
+  a.classList.add('active');
+  const page=a.dataset.page;
+  // Hide all pages
+  document.querySelector('.content').style.display=page==='generator'?'grid':'none';
+  document.querySelectorAll('.page-content').forEach(p=>p.style.display='none');
+  if(page!=='generator'){document.getElementById('page-'+page).style.display='block';}
+});
+
 loadApi();renderModuleEditors();
 </script>
 </body>
